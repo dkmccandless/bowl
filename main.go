@@ -105,6 +105,7 @@ type Pair struct{ a, d Value }
 
 func (p Pair) String() string {
 	//
+	return ""
 }
 
 // One of: bool, int, float64, string, Pair, func(...Value) Value

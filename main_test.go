@@ -16,9 +16,9 @@ var Valid = []struct {
 	in   string
 	want Expression
 }{
-	{"()", []Expression{}},
+	{"()", nil},
 	{"5", 5},
-	{"(5)", []Expression{5}},
+	{"(5)", Pair{a: 5}},
 	{"5+5", "5+5"},
 	{"55", 55},
 }
