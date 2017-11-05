@@ -14,7 +14,7 @@ var Invalid = []string{
 
 var Valid = []struct {
 	in   string
-	want Expression
+	want Value
 }{
 	{"()", nil},
 	{"5", 5},

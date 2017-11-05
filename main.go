@@ -28,11 +28,8 @@ func REPL(in string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(Eval(Expression(exp), GlobalEnv))
+	fmt.Println(Eval(exp, GlobalEnv))
 }
-
-// One of: int, float64, string, []Expression
-type Expression Value
 
 // Elements in a Stack may not be empty. Empty string signals EOF.
 type Stack []string
@@ -63,7 +60,7 @@ func Tokenize(program string) (tokens []string) {
 func ReadFromTokens(tokens *Stack) (Value, error) {
 	t := tokens.Shift()
 	if t == "" {
-		return nil, errors.New("empty expression")
+		return nil, errors.New("empty expession")
 	}
 	if t == ")" {
 		return nil, errors.New("unexpected closing parenthesis")
@@ -111,31 +108,31 @@ func (p Pair) String() string {
 // One of: bool, int, float64, string, Pair, func(...Value) Value
 type Value interface{}
 
-func Eval(expr Expression, env Env) Value {
-	switch expr := expr.(type) {
+func Eval(exp Value, env Env) Value {
+	switch exp := exp.(type) {
 	case int:
-		return expr
+		return exp
 	case float64:
-		return expr
+		return exp
 	case string:
-		v, ok := env[expr]
+		v, ok := env[exp]
 		if !ok {
 			panic("Unknown variable")
 		}
 		return v
 	case Pair:
-		switch op, _ := car(expr).(string); op {
+		switch op, _ := car(exp).(string); op {
 		case "if":
-			return EvalIf(cadr(expr), caddr(expr), cadddr(expr), env)
+			return EvalIf(cadr(exp), caddr(exp), cadddr(exp), env)
 		case "define":
-			return EvalDefine(cadr(expr), caddr(expr), env)
+			return EvalDefine(cadr(exp), caddr(exp), env)
 		case "quote":
-			return cadr(Value(expr))
+			return cadr(Value(exp))
 		default:
 			// (x a b c)
-			f := Eval(car(expr), env)
+			f := Eval(car(exp), env)
 			var values []Value
-			for e := cdr(expr); e != nil; e = cdr(e) {
+			for e := cdr(exp); e != nil; e = cdr(e) {
 				values = append(values, Eval(car(e), env))
 			}
 			return Apply(f, values)
@@ -144,7 +141,7 @@ func Eval(expr Expression, env Env) Value {
 	panic("eval: bug in the interpreter")
 }
 
-func EvalIf(test, consequent, alt Expression, env Env) Value {
+func EvalIf(test, consequent, alt Value, env Env) Value {
 	if Eval(test, env).(bool) {
 		return Eval(consequent, env)
 	} else {
@@ -152,7 +149,7 @@ func EvalIf(test, consequent, alt Expression, env Env) Value {
 	}
 }
 
-func EvalDefine(v, exp Expression, env Env) Value {
+func EvalDefine(v, exp Value, env Env) Value {
 	env[v.(string)] = Eval(exp, env)
 	return "ok"
 }
