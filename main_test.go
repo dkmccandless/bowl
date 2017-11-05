@@ -38,3 +38,20 @@ func TestParseValid(t *testing.T) {
 		}
 	}
 }
+
+func TestPairString(t *testing.T) {
+	for _, test := range []struct {
+		p    Pair
+		want string
+	}{
+		{Pair{"a", "b"}, "(a . b)"},
+		{Pair{"a", Pair{"b", "c"}}, "(a b . c)"},
+		{Pair{"a", Pair{"b", Pair{"c", Pair{"d", "x"}}}}, "(a b c d . x)"},
+		{Pair{"a", nil}, "(a)"},
+		{Pair{"a", Pair{"b", Pair{"c", Pair{"d", nil}}}}, "(a b c d)"},
+	} {
+		if got := test.p.String(); got != test.want {
+			t.Errorf("%#v.String(): got %v, want %v", test.p, got, test.want)
+		}
+	}
+}

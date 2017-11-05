@@ -13,11 +13,11 @@ import (
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for fmt.Print("> "); scanner.Scan(); fmt.Print("> ") {
-		REPL(scanner.Text())
+		EP(scanner.Text())
 	}
 }
 
-func REPL(in string) {
+func EP(in string) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
@@ -101,8 +101,18 @@ func Parse(program string) (Value, error) {
 type Pair struct{ a, d Value }
 
 func (p Pair) String() string {
-	//
-	return ""
+	return fmt.Sprintf("(%v)", p.string())
+}
+
+func (p Pair) string() string {
+	switch d:=p.d.(type) {
+	case Pair:
+		return fmt.Sprintf("%v %v", p.a, d.string())
+	case nil:
+		return fmt.Sprintf("%v", p.a)
+	default:
+		return fmt.Sprintf("%v . %v", p.a, d)
+	}
 }
 
 // One of: bool, int, float64, string, Pair, func(...Value) Value
