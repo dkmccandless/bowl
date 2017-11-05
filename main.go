@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -21,6 +22,7 @@ func EP(in string) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
+			debug.PrintStack()
 		}
 	}()
 
@@ -66,7 +68,7 @@ func ReadFromTokens(tokens *Stack) (Value, error) {
 		return nil, errors.New("unexpected closing parenthesis")
 	}
 	if t == "(" {
-		var e Value
+		var e Value = snil
 		for tokens.Peek() != ")" {
 			exp, err := ReadFromTokens(tokens)
 			if err != nil {
@@ -105,10 +107,10 @@ func (p Pair) String() string {
 }
 
 func (p Pair) string() string {
-	switch d:=p.d.(type) {
+	switch d := p.d.(type) {
 	case Pair:
 		return fmt.Sprintf("%v %v", p.a, d.string())
-	case nil:
+	case schemeNil:
 		return fmt.Sprintf("%v", p.a)
 	default:
 		return fmt.Sprintf("%v . %v", p.a, d)
@@ -142,7 +144,7 @@ func Eval(exp Value, env Env) Value {
 			// (x a b c)
 			f := Eval(car(exp), env)
 			var values []Value
-			for e := cdr(exp); e != nil; e = cdr(e) {
+			for e := cdr(exp); e != snil; e = cdr(e) {
 				values = append(values, Eval(car(e), env))
 			}
 			return Apply(f, values)
@@ -175,9 +177,16 @@ func Apply(f Value, args []Value) Value {
 
 type Env map[string]Value
 
+type schemeNil struct{}
+
+func (s schemeNil) String() string { return "()" }
+
+var snil schemeNil
+
 var GlobalEnv = Env{
 	"true":  true,
 	"false": false,
+	"nil":   snil,
 	"car":   car,
 	"cdr":   cdr,
 	"cons":  cons,
@@ -282,8 +291,8 @@ func div(a, b Value) Value {
 // (append (cons 3 nil) 4) => (3 4)
 // (append nil 4) => (4)
 func schemeAppend(a, b Value) Value {
-	if a == nil {
-		return Pair{b, nil}
+	if a == snil {
+		return Pair{b, snil}
 	}
 	return cons(car(a), schemeAppend(cdr(a), b))
 }
