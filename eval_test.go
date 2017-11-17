@@ -9,6 +9,13 @@ func TestEval(t *testing.T) {
 	tests := []struct{ exp, want string }{
 		{"5", "5"},
 		{"6", "6"},
+		{"(quote a)", "a"},
+		{"(abs -3)", "3"},
+		{"(abs 3)", "3"},
+		{"(append nil 3)", "(3)"},
+		{"(append (list 3 4) 5)", "(3 4 5)"},
+		{"(cons 3 4)", "(3 . 4)"},
+		{"(list 3 4 5)", "(3 4 5)"},
 	}
 
 	for _, test := range tests {
