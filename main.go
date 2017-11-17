@@ -200,7 +200,7 @@ var GlobalEnv = Env{
 	"-":      sub,
 	"*":      mult,
 	"/":      div,
-	// "abs":    abs,
+	"abs":    abs,
 	"append": schemeAppend,
 	"list":   list,
 }
@@ -284,6 +284,22 @@ func div(a, b Value) Value {
 		return a / b.(float64)
 	}
 	panic(fmt.Sprintf("div: mismatched Value types %T and %T", a, b))
+}
+
+func abs(a Value) Value {
+	switch a := a.(type) {
+	case int:
+		if a < 0 {
+			return -a
+		}
+		return a
+	case float64:
+		if a < 0 {
+			return -a
+		}
+		return a
+	}
+	panic(fmt.Sprintf("abs: non-numeric Value type %T", a))
 }
 
 // (define nil (quote ()))
