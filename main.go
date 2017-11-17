@@ -184,21 +184,25 @@ func (s schemeNil) String() string { return "()" }
 var snil schemeNil
 
 var GlobalEnv = Env{
-	"true":  true,
-	"false": false,
-	"nil":   snil,
-	"car":   car,
-	"cdr":   cdr,
-	"cons":  cons,
-	"=":     equal,
-	"<":     lessthan,
-	">":     greaterthan,
-	"+":     add,
-	"-":     sub,
-	"*":     mult,
-	"/":     div,
+	"true":   true,
+	"false":  false,
+	"nil":    snil,
+	"car":    car,
+	"cdr":    cdr,
+	"cadr":   cadr,
+	"caddr":  caddr,
+	"cadddr": cadddr,
+	"cons":   cons,
+	"=":      equal,
+	"<":      lessthan,
+	">":      greaterthan,
+	"+":      add,
+	"-":      sub,
+	"*":      mult,
+	"/":      div,
 	// "abs":    abs,
 	"append": schemeAppend,
+	"list":   list,
 }
 
 // (car (cons 4 5)) => 4
@@ -303,3 +307,10 @@ func schemeAppend(a, b Value) Value {
     (cons b nil)
     (cons (car a) (append (cdr a) b)))
 */
+
+func list(v ...Value) Value {
+	if len(v) == 0 {
+		return snil
+	}
+	return Pair{v[0], list(v[1:]...)}
+}
