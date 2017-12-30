@@ -127,11 +127,7 @@ func Eval(exp Value, env Env) Value {
 	case float64:
 		return exp
 	case string:
-		v, ok := env[exp]
-		if !ok {
-			panic("Unknown variable")
-		}
-		return v
+		return find(exp, env)
 	case Pair:
 		switch op, _ := car(exp).(string); op {
 		case "if":
@@ -162,7 +158,7 @@ func EvalIf(test, consequent, alt Value, env Env) Value {
 }
 
 func EvalDefine(v, exp Value, env Env) Value {
-	env[v.(string)] = Eval(exp, env)
+	env.dict[v.(string)] = Eval(exp, env)
 	return "ok"
 }
 
@@ -175,34 +171,49 @@ func Apply(f Value, args []Value) Value {
 	return reflect.ValueOf(f).Call(values)[0].Interface().(Value)
 }
 
-type Env map[string]Value
-
 type schemeNil struct{}
 
 func (s schemeNil) String() string { return "()" }
 
 var snil schemeNil
 
+type Env struct {
+	dict   map[string]Value
+	parent *Env
+}
+
+func find(name string, env Env) Value {
+	if v, ok := env.dict[name]; ok {
+		return v
+	}
+	if env.parent != nil {
+		return find(name, *env.parent)
+	}
+	panic("Unknown variable")
+}
+
 var GlobalEnv = Env{
-	"true":   true,
-	"false":  false,
-	"nil":    snil,
-	"car":    car,
-	"cdr":    cdr,
-	"cadr":   cadr,
-	"caddr":  caddr,
-	"cadddr": cadddr,
-	"cons":   cons,
-	"=":      equal,
-	"<":      lessthan,
-	">":      greaterthan,
-	"+":      add,
-	"-":      sub,
-	"*":      mult,
-	"/":      div,
-	"abs":    abs,
-	"append": schemeAppend,
-	"list":   list,
+	dict: map[string]Value{
+		"true":   true,
+		"false":  false,
+		"nil":    snil,
+		"car":    car,
+		"cdr":    cdr,
+		"cadr":   cadr,
+		"caddr":  caddr,
+		"cadddr": cadddr,
+		"cons":   cons,
+		"=":      equal,
+		"<":      lessthan,
+		">":      greaterthan,
+		"+":      add,
+		"-":      sub,
+		"*":      mult,
+		"/":      div,
+		"abs":    abs,
+		"append": schemeAppend,
+		"list":   list,
+	},
 }
 
 // (car (cons 4 5)) => 4
