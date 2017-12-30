@@ -127,7 +127,7 @@ func Eval(exp Value, env Env) Value {
 	case float64:
 		return exp
 	case string:
-		return find(exp, env)
+		return find(exp, env)[exp]
 	case Pair:
 		switch op, _ := car(exp).(string); op {
 		case "if":
@@ -182,9 +182,9 @@ type Env struct {
 	parent *Env
 }
 
-func find(name string, env Env) Value {
-	if v, ok := env.dict[name]; ok {
-		return v
+func find(name string, env Env) map[string]Value {
+	if _, ok := env.dict[name]; ok {
+		return env.dict
 	}
 	if env.parent != nil {
 		return find(name, *env.parent)
